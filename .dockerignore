@@ -1,0 +1,4 @@
+.envrc
+.git/
+.github/
+node_modules/

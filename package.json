@@ -1,0 +1,61 @@
+{
+  "name": "stromligning",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bin/stromligning.js",
+  "scripts": {
+    "start": "node bin/stromligning.js",
+    "check-format": "prettier . --check --cache",
+    "format": "prettier . --write --cache",
+    "lint": "eslint . --cache --max-warnings=0 --ext .js,.mjs"
+  },
+  "files": [
+    "bin/**/*.js",
+    "lib/**/*.js",
+    "!**/__tests__/**"
+  ],
+  "author": "",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "pino": "^8.16.1",
+    "pino-pretty": "^10.2.3",
+    "redis": "^4.6.10",
+    "socket.io-client": "^4.7.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.36.0",
+    "prettier": "2.8.3"
+  },
+  "eslintConfig": {
+    "env": {
+      "node": true,
+      "jest": true
+    },
+    "extends": "eslint:recommended",
+    "overrides": [],
+    "parserOptions": {
+      "ecmaVersion": "latest"
+    },
+    "rules": {
+      "no-unused-vars": [
+        "error",
+        {
+          "argsIgnorePattern": "^_"
+        }
+      ]
+    }
+  },
+  "jest": {
+    "clearMocks": true,
+    "collectCoverage": false,
+    "collectCoverageFrom": [
+      "lib/**/*.js",
+      "!lib/**/{__tests__,testUtils}/**/*.js"
+    ],
+    "coverageDirectory": "./.coverage/",
+    "coverageReporters": [
+      "lcov",
+      "text-summary"
+    ]
+  }
+}
