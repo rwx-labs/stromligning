@@ -22,4 +22,6 @@ COPY --from=deps /usr/src/app/node_modules ./node_modules
 # Add the rest of the application
 ADD . .
 
+EXPOSE 3000
+
 ENTRYPOINT ["npm", "start"]
