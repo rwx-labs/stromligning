@@ -8,7 +8,7 @@ WORKDIR /usr/src/app
 
 # Install dependencies
 COPY ./package.json ./package-lock.json ./
-RUN npm ci --ignore-scripts
+RUN npm ci --omit=dev --ignore-scripts
 
 FROM node:${NODE_VERSION}-alpine
 
