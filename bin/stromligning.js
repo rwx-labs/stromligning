@@ -18,7 +18,7 @@ let data = {};
 
 app.use(compression());
 
-app.get("/v1/all", (req, res) => {
+app.get("/v1/all", (_req, res) => {
   res.json(data);
 });
 
@@ -27,6 +27,27 @@ app.get("/v1/:data", (req, res) => {
 
   if (v) {
     res.json(v);
+  } else {
+    res.status(404).end();
+  }
+});
+
+// `/livez` returns 200 if we're connected to the api.
+app.get("/livez", (_req, res) => {
+  if (socket.connected) {
+    res.status(200).send("ok");
+  } else {
+    res.status(503);
+  }
+});
+
+// `/readyz` returns 200 if we're connected to the api and we've cached at least 4
+// values.
+app.get("/readyz", (_req, res) => {
+  if (socket.connected && Object.keys(data).length > 4) {
+    res.status(200).send("ok");
+  } else {
+    res.status(503);
   }
 });
 
