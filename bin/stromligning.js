@@ -2,82 +2,55 @@
 "use strict";
 
 const { io } = require("socket.io-client");
-const { createClient } = require("redis");
 const { pino } = require("pino");
-
+const express = require("express");
+const compression = require("compression");
+const app = express();
 const logger = pino({
   level: "trace",
 });
 
 const BASE_URL = "https://stromligning.dk";
-const { REDIS_URL } = process.env;
 
-// Instantiate the redis client.
-const client = createClient({ url: REDIS_URL });
-logger.info(`Connecting to Redis at ${REDIS_URL}`);
-const redisPromise = client.connect();
-let socketPromise;
+let server;
 let socket = io(BASE_URL, { autoConnect: false });
+let data = {};
 
-client.on("ready", (test) => {
-  logger.info({ test }, `Connected to Redis`);
-  logger.info(`Connecting to API at ${BASE_URL} ..`);
+app.use(compression());
 
-  socketPromise = socket.connect();
+app.get("/v1/all", (req, res) => {
+  res.json(data);
 });
 
-client.on("error", (err) => {
-  logger.error({ err }, "A redis error occurred");
+app.get("/v1/:data", (req, res) => {
+  let v = data[req.params.data];
 
-  client.quit();
-});
-
-client.on("end", (d) => {
-  logger.info({ d }, "Disconnected from Redis");
-
-  socket.disconnect();
+  if (v) {
+    res.json(v);
+  }
 });
 
 socket.on("connect", () => {
   logger.info("Connected to API");
 });
 
-// Available events:
-//
-// products
-// prices
-// transport
-// co2emis
-// co2emisprog
+socket.onAny((event, ...args) => {
+  if (args.length > 1) {
+    logger.warn({ args }, "unexpected arg length");
+    return;
+  }
 
-socket.on("products", async (products) => {
-  const num_products = products.length;
-
-  logger.info({ num_products }, `Updated list of products`);
-
-  await client.set("dk.stromligning.products", JSON.stringify(products));
-});
-
-socket.on("prices", async (prices) => {
-  const num_prices = prices.length;
-
-  logger.info({ num_prices }, `Updated list of prices`);
-
-  await client.set("dk.stromligning.prices", JSON.stringify(prices));
-});
-
-socket.on("transport", async (transport) => {
-  const num_transports = transport.length;
-
-  logger.info({ num_transports }, `Updated list of transports`);
-
-  await client.set("dk.stromligning.transport", JSON.stringify(transport));
+  const value = args[0];
+  logger.info({ event }, "received socket event");
+  data[event] = value;
 });
 
 socket.on("disconnect", () => {
-  logger.info("Disconnected from API");
+  logger.info("Disconnected from API, stopping web server");
+  server.close();
 });
 
-Promise.any([redisPromise, socketPromise]).then(() =>
-  logger.info("Lost connection")
-);
+server = app.listen(3000, () => {
+  logger.debug("Connecting to API");
+  socket.connect();
+});

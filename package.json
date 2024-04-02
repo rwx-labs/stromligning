@@ -17,9 +17,10 @@
   "author": "",
   "license": "UNLICENSED",
   "dependencies": {
+    "compression": "^1.7.4",
+    "express": "^4.19.2",
     "pino": "^8.16.1",
     "pino-pretty": "^10.2.3",
-    "redis": "^4.6.10",
     "socket.io-client": "^4.7.2"
   },
   "devDependencies": {
