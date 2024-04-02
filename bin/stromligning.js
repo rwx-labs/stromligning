@@ -7,7 +7,7 @@ const express = require("express");
 const compression = require("compression");
 const app = express();
 const logger = pino({
-  level: "trace",
+  level: process.env.LOG_LEVEL || 'info',
 });
 
 const BASE_URL = "https://stromligning.dk";
@@ -62,12 +62,12 @@ socket.onAny((event, ...args) => {
   }
 
   const value = args[0];
-  logger.info({ event }, "received socket event");
+  logger.trace({ event }, "received socket event");
   data[event] = value;
 });
 
 socket.on("disconnect", () => {
-  logger.info("Disconnected from API, stopping web server");
+  logger.info("Lost connection to API, stopping web server");
   server.close();
 });
 
