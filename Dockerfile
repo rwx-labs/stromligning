@@ -24,4 +24,4 @@ ADD . .
 
 EXPOSE 3000
 
-ENTRYPOINT ["npm", "start"]
+ENTRYPOINT ["node", "bin/stromligning.js"]
