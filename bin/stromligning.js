@@ -12,7 +12,6 @@ const logger = pino({
 
 const BASE_URL = "https://stromligning.dk";
 
-let server;
 let socket = io(BASE_URL, { autoConnect: false, reconnectionAttempts: 20 });
 let data = {};
 
@@ -86,7 +85,7 @@ socket.on("disconnect", () => {
   logger.info("Lost connection to API");
 });
 
-server = app.listen(3000, () => {
+app.listen(3000, () => {
   logger.debug("Connecting to API");
   socket.connect();
 });
