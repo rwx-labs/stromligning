@@ -7,13 +7,13 @@ const express = require("express");
 const compression = require("compression");
 const app = express();
 const logger = pino({
-  level: process.env.LOG_LEVEL || 'info',
+  level: process.env.LOG_LEVEL || "info",
 });
 
 const BASE_URL = "https://stromligning.dk";
 
 let server;
-let socket = io(BASE_URL, { autoConnect: false });
+let socket = io(BASE_URL, { autoConnect: false, reconnectionAttempts: 20 });
 let data = {};
 
 app.use(compression());
@@ -34,7 +34,7 @@ app.get("/v1/:data", (req, res) => {
 
 // `/livez` returns 200 if we're connected to the api.
 app.get("/livez", (_req, res) => {
-  if (socket.connected) {
+  if (Object.keys(data).length > 4) {
     res.status(200).send("ok");
   } else {
     res.status(503);
@@ -44,7 +44,7 @@ app.get("/livez", (_req, res) => {
 // `/readyz` returns 200 if we're connected to the api and we've cached at least 4
 // values.
 app.get("/readyz", (_req, res) => {
-  if (socket.connected && Object.keys(data).length > 4) {
+  if (Object.keys(data).length > 4) {
     res.status(200).send("ok");
   } else {
     res.status(503);
@@ -53,6 +53,22 @@ app.get("/readyz", (_req, res) => {
 
 socket.on("connect", () => {
   logger.info("Connected to API");
+});
+
+socket.io.on("reconnect", (attempt) => {
+  logger.info(`Reconnected to API after ${attempt} attempts`);
+});
+
+socket.io.on("reconnect_attempt", (attempt) => {
+  logger.info(`Attempting reconnection number ${attempt} to the API`);
+});
+
+socket.io.on("reconnect_error", (error) => {
+  logger.error(`Could not connect to API: ${error}`);
+});
+
+socket.io.on("reconnect_failed", () => {
+  logger.info("Reconnection to API failed");
 });
 
 socket.onAny((event, ...args) => {
@@ -67,8 +83,7 @@ socket.onAny((event, ...args) => {
 });
 
 socket.on("disconnect", () => {
-  logger.info("Lost connection to API, stopping web server");
-  server.close();
+  logger.info("Lost connection to API");
 });
 
 server = app.listen(3000, () => {
