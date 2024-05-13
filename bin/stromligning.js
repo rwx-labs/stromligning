@@ -33,20 +33,20 @@ app.get("/v1/:data", (req, res) => {
 
 // `/livez` returns 200 if we're connected to the api.
 app.get("/livez", (_req, res) => {
-  if (Object.keys(data).length > 4) {
+  if (Object.keys(data).length >= 4) {
     res.status(200).send("ok");
   } else {
-    res.status(503);
+    res.status(503).end();
   }
 });
 
 // `/readyz` returns 200 if we're connected to the api and we've cached at least 4
 // values.
 app.get("/readyz", (_req, res) => {
-  if (Object.keys(data).length > 4) {
+  if (Object.keys(data).length >= 4) {
     res.status(200).send("ok");
   } else {
-    res.status(503);
+    res.status(503).end();
   }
 });
 
